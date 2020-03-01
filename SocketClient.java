@@ -1,12 +1,6 @@
 import java.net.*;
 import java.io.*;
  
-/**
- * This is the chat client program.
- * Type 'bye' to terminte the program.
- *
- * @author www.codejava.net
- */
 public class SocketClient {
     private String hostname;
     private int port;
