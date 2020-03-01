@@ -12,31 +12,27 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
  
-/**
- * A utility class that encrypts or decrypts a file.
- * @author www.codejava.net
- *
- */
-public class CryptoUtils {
+
+public class DefaultEncryptionStrategy {
     private static final String ALGORITHM = "AES";
     private static final String TRANSFORMATION = "AES";
  
-    public static void encrypt(String key, File inputFile, File outputFile)
-            throws CryptoException {
-        doCrypto(Cipher.ENCRYPT_MODE, key, inputFile, outputFile);
+    public static void encrypt(String password, File inputFile, File outputFile)
+            throws EncryptionException {
+        doEncryption(Cipher.ENCRYPT_MODE, password, inputFile, outputFile);
     }
  
-    public static void decrypt(String key, File inputFile, File outputFile)
-            throws CryptoException {
-        doCrypto(Cipher.DECRYPT_MODE, key, inputFile, outputFile);
+    public static void decrypt(String password, File inputFile, File outputFile)
+            throws EncryptionException {
+        doEncryption(Cipher.DECRYPT_MODE, password, inputFile, outputFile);
     }
  
-    private static void doCrypto(int cipherMode, String key, File inputFile,
-            File outputFile) throws CryptoException {
+    private static void doEncryption(int cryptionMode, String password, File inputFile,
+            File outputFile) throws EncryptionException {
         try {
-            Key secretKey = new SecretKeySpec(key.getBytes(), ALGORITHM);
+            Key secretKey = new SecretKeySpec(password.getBytes(), ALGORITHM);
             Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-            cipher.init(cipherMode, secretKey);
+            cipher.init(cryptionMode, secretKey);
              
             FileInputStream inputStream = new FileInputStream(inputFile);
             byte[] inputBytes = new byte[(int) inputFile.length()];
@@ -53,7 +49,7 @@ public class CryptoUtils {
         } catch (NoSuchPaddingException | NoSuchAlgorithmException
                 | InvalidKeyException | BadPaddingException
                 | IllegalBlockSizeException | IOException ex) {
-            throw new CryptoException("Error encrypting/decrypting file", ex);
+            throw new EncryptionException("Error encrypting/decrypting file", ex);
         }
     }
 }
