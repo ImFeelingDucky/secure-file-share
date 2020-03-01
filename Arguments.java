@@ -14,16 +14,14 @@ public class Arguments {
   private String hostname;
   private int port;
   private boolean valid;
+  private String[] allArgs;
 
   /** 
    * Constructor 
    **/
   public Arguments(String[] args) {
+    allArgs = args;
     request = args[0];
-    directory = args[1];
-    filename = args[2];
-    hostname = args[3];
-    port = Integer.parseInt(args[4]);
 
     // Check args validity
     if (request.equals("download") || request.equals("list") || request.equals("upload")) {
@@ -31,8 +29,15 @@ public class Arguments {
     }
     else {valid = false;}
 
+    directory = args[1];
+    
     if (request.equals("list")){
       hostname = args[2];  
+      port = Integer.parseInt(args[3]);
+    }
+    else {
+      filename = args[2];
+      hostname = args[3];
       port = Integer.parseInt(args[4]);
     }
   }
@@ -50,4 +55,12 @@ public class Arguments {
   public String getFilename() {return filename;}
   public String getHostname() {return hostname;}
   public int getPort() {return port;}
+
+  public String toString() {
+    String string = "";
+    for (int i = 0; i<allArgs.length; i++) {
+      string += allArgs[i];
+    }
+    return string;
+  }
 }

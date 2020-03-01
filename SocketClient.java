@@ -18,7 +18,11 @@ public class SocketClient {
       try {
         if (!arguments.isValid()) {return;}
 
-        ArgsSocket socket = new ArgsSocket(arguments.getHostname(), arguments.getPort(), arguments);
+        Socket socket = new Socket(arguments.getHostname(), arguments.getPort());
+        
+        PrintStream output = new PrintStream(socket.getOutputStream(), true);
+        output.print("hi");
+
 
         System.out.println("Connected to the file server");
 
