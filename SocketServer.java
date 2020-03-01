@@ -16,8 +16,8 @@ public class SocketServer {
         this.port = port;
     }
  
-    public void execute() {
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
+    public void execute(Arguments arguments) {
+        try (ArgsServerSocket serverSocket = new ArgsServerSocket(port, arguments)) {
  
             System.out.println("File server is listening on port " + port);
  
@@ -46,7 +46,7 @@ public class SocketServer {
         int port = Integer.parseInt(args[0]);
  
         SocketServer server = new SocketServer(port);
-        server.execute();
+        server.execute(null);
     }
  
  
