@@ -16,11 +16,13 @@ public class RequestThread extends Thread {
             InputStream input = socket.getInputStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(input));
  
-            OutputStream output = socket.getOutputStream();
+            PrintStream output = new PrintStream(socket.getOutputStream());
             writer = new PrintWriter(output, true);
+            
  
             // Change this so that it gets the argument for the command
             String clientMessage;
+            server.print(output);
 
             server.removeUser(this);
  

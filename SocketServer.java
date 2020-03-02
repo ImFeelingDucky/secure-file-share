@@ -16,7 +16,7 @@ public class SocketServer {
         this.port = port;
     }
  
-    public void execute() {
+    public void execute(Arguments arguments) {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
  
             System.out.println("File server is listening on port " + port);
@@ -46,15 +46,20 @@ public class SocketServer {
         int port = Integer.parseInt(args[0]);
  
         SocketServer server = new SocketServer(port);
-        server.execute();
+        server.execute(null);
     }
  
  
     /**
      * When a client is disconneted, removes the associated username and RequestThread
      */
-    void removeUser(RequestThread aUser) {
+    public void removeUser(RequestThread aUser) {
       userThreads.remove(aUser);
       System.out.println("A user disconnected");
-    } 
+    }
+    
+    public void print(PrintStream stream) {
+      System.out.println(stream);
+    }
+
 }
