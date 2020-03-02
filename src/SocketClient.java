@@ -17,19 +17,15 @@ public class SocketClient {
         PrintStream output = new PrintStream(socket.getOutputStream(), true);
         output.print("hi");
 
-
         System.out.println("Connected to the file server");
-
 
       } catch (UnknownHostException ex) {
         System.out.println("Server not found: " + ex.getMessage());
       } catch (IOException ex) {
         System.out.println("I/O Error: " + ex.getMessage());
       }
-
     }
- 
- 
+
     public static void main(String[] args) {
       SocketClient client = new SocketClient(new Arguments(args));
       client.execute();

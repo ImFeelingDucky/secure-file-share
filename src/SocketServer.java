@@ -1,7 +1,7 @@
 import java.io.*;
 import java.net.*;
 import java.util.*;
- 
+
 /**
  * This is the chat server program.
  * Press Ctrl + C to terminate the program.
@@ -10,7 +10,7 @@ import java.util.*;
  */
 public class SocketServer {
     private int port;
-    private Set<RequestThread> userThreads = new HashSet<>();
+    private Set<RequestThread> threads = new HashSet<>();
  
     public SocketServer(int port) {
         this.port = port;
@@ -26,9 +26,8 @@ public class SocketServer {
                 System.out.println("New client connected");
  
                 RequestThread newUser = new RequestThread(socket, this);
-                userThreads.add(newUser);
+                threads.add(newUser);
                 newUser.start();
- 
             }
  
         } catch (IOException ex) {
@@ -53,8 +52,13 @@ public class SocketServer {
     /**
      * When a client is disconneted, removes the associated username and RequestThread
      */
+<<<<<<< Updated upstream:SocketServer.java
     public void removeUser(RequestThread aUser) {
       userThreads.remove(aUser);
+=======
+    void removeUser(RequestThread aUser) {
+      threads.remove(aUser);
+>>>>>>> Stashed changes:src/SocketServer.java
       System.out.println("A user disconnected");
     }
     
