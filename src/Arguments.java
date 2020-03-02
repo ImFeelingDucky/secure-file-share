@@ -6,7 +6,8 @@
 import java.util.*;
 import java.io.*;
 
-public class Arguments {
+@SuppressWarnings("serial")
+public class Arguments implements Serializable {
   // Data fields  
   private String request;
   private String directory;

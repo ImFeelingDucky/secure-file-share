@@ -19,10 +19,11 @@ public class RequestThread extends Thread {
             PrintStream output = new PrintStream(socket.getOutputStream());
             writer = new PrintWriter(output, true);
             
+            
  
             // Change this so that it gets the argument for the command
             String clientMessage;
-            server.print(output);
+            server.printArgs(socket);
 
             server.removeUser(this);
  

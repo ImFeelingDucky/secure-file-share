@@ -15,7 +15,8 @@ public class SocketClient {
         Socket socket = new Socket(arguments.getHostname(), arguments.getPort());
         
         PrintStream output = new PrintStream(socket.getOutputStream(), true);
-        output.print("hi");
+        ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+        oos.writeObject(arguments);
 
         System.out.println("Connected to the file server");
 

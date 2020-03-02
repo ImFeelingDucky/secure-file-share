@@ -1,13 +1,9 @@
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.lang.*;
 
-/**
- * This is the chat server program.
- * Press Ctrl + C to terminate the program.
- *
- * @author www.codejava.net
- */
+
 public class SocketServer {
     private int port;
     private Set<RequestThread> threads = new HashSet<>();
@@ -52,18 +48,27 @@ public class SocketServer {
     /**
      * When a client is disconneted, removes the associated username and RequestThread
      */
-<<<<<<< Updated upstream:SocketServer.java
     public void removeUser(RequestThread aUser) {
-      userThreads.remove(aUser);
-=======
-    void removeUser(RequestThread aUser) {
       threads.remove(aUser);
->>>>>>> Stashed changes:src/SocketServer.java
       System.out.println("A user disconnected");
     }
     
-    public void print(PrintStream stream) {
-      System.out.println(stream);
+    public void printArgs(Socket socket) {
+      try {
+        ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+        Arguments args = (Arguments) ois.readObject();
+        System.out.println(args);
+      } catch (IOException e) {System.out.println(e.getMessage());}
+      catch (ClassNotFoundException e) {System.out.println(e.getMessage());}
+    }
+
+    public synchronized void downloadFile() {
+    }
+
+    public synchronized void uploadFile() {
+    }
+
+    public synchronized void listFiles() {
     }
 
 }

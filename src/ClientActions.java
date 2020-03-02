@@ -6,6 +6,6 @@ public class ClientActions{
 
     public static void Download(SocketClient sc)
     {
-        sc.send()
+        //sc.send();
     }
 }
