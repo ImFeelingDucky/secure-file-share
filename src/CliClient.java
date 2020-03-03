@@ -1,5 +1,16 @@
+import java.io.File;
+import java.io.IOException;
+import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 public class CliClient {
-    SocketClient socket;
+    private SocketClient socket;
+    private static String usage = "Usage: java CliClient <action> <hostname> <port> <commandArguments>" +
+            "\nwhere action is one of: upload, download, list.";
 
     public static void main(String[] args) {
         CliClient cliClient = new CliClient();
@@ -8,33 +19,63 @@ public class CliClient {
 
     public void runCommand(String[] args) {
         Action action = null;
+
         try {
             action = Action.valueOf(args[0].toUpperCase());
         } catch (IllegalArgumentException | NullPointerException e) {
-            System.out.println("Usage: java CliClient <action> ...");
+            System.out.println(usage);
 //            System.out.println("Usage: RTFM");
             System.exit(1);
         }
 
+//        Generically:
+//        java CliClient <action> <hostname> <port> <commandArguments>
+
+//        With our current set of three actions:
+//        java CliClient <action> <hostname> <port> <directory> [filename]
+
+
+        String hostname = args[1];
+        int port = Integer.parseInt(args[2]);
+
+        Map<String, String> arguments = new HashMap<>();
+
+        String directory = args[3];
+        arguments.put("directory", directory);
+
+        byte[] body = null;
+
         // Check args validity
         switch (action) {
             case LIST:
-                String hostname = args[2];
-                int port = Integer.parseInt(args[3]);
-                String directory = args[1];
-
-                list(hostname, port, directory);
+                break;
+            case UPLOAD:
+            case DOWNLOAD:
+                String filename = args[3];
+                arguments.put("filename", filename);
                 break;
             default:
-
+                System.out.println(usage);
         }
-    }
 
-    public String[] list(String hostname, int port, String directory) {
-        Message<X> request = new Message(new Head(), null);
+        Message request = new Message(new Head(hostname, port, action, arguments), body);
 
-//        Response response = socket.makeRequest(request);
-        Message<X> response = socket.makeRequest(request);
+        try {
+            Message response = socket.makeRequest(request);
 
+//          Choose what to do with response based on content type
+            switch (response.getHead().get("Content-Type")) {
+                case "text":
+                    System.out.println(new String(response.getBody(), StandardCharsets.UTF_8));
+                    break;
+                case "file":
+                    File f = new File(response.getHead().get("filename"));
+                    Files.write(f.toPath(), response.getBody());
+            }
+        } catch (UnknownHostException ex) {
+            System.out.println("Server not found: " + ex.getMessage());
+        } catch (IOException ex) {
+            System.out.println("I/O Error: " + ex.getMessage());
+        }
     }
 }
