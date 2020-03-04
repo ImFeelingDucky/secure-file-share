@@ -1,6 +1,7 @@
-import java.io.File;
+import javax.crypto.NoSuchPaddingException;
+import java.security.GeneralSecurityException;
 
 public interface EncryptionStrategy {
-    File encrypt(String password, File inputFile, File outputFile);
-    File decrypt(String password, File inputFile, File outputFile);
+    byte[] encrypt(byte[] plainText, String password) throws GeneralSecurityException;
+    byte[] decrypt(byte[] cipherText, String password) throws GeneralSecurityException;
 }

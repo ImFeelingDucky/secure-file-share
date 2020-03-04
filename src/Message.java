@@ -1,26 +1,25 @@
 import java.io.Serializable;
 
-public class Message implements Serializable
-{
+/**
+ * Packages a request or response sent between client and server.
+ */
+public class Message implements Serializable {
     public Head head;
-//    TODO: Document this
+
+    /**
+     * The body of a Message is an array of bytes, allowing easy serialisation
+     * and simple transfer of files or data without having to worry about file-type or encoding.
+     */
+
     public byte[] body;
 
-    public Message(Head h, byte[] b){
+    public Message(Head h, byte[] b) {
         head = h;
         body = b;
     }
 
-    public String getFromHead(String key) {
-        return head.get(key);
-    }
-
     public Head getHead() {
         return head;
-    }
-
-    public Action getAction() {
-        return head.getAction();
     }
 
     public byte[] getBody() {

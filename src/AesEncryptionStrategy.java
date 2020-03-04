@@ -1,13 +1,10 @@
 import javax.crypto.*;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.SecretKeySpec;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 
-// TODO: implements EncryptionStrategy
-public class AesEncryptionStrategy {
+public class AesEncryptionStrategy implements EncryptionStrategy {
     private static final String CIPHER_TYPE = "AES";
     private static final String CIPHER_SPECIFICATION = "AES/CBC/PKCS5Padding";
 
@@ -24,7 +21,7 @@ public class AesEncryptionStrategy {
         return SecretKeyFactory.getInstance("AES").generateSecret(spec);
     }
 
-    public static byte[] encrypt(byte[] plainText, String password) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, InvalidKeySpecException, InvalidAlgorithmParameterException {
+    public byte[] encrypt(byte[] plainText, String password) throws GeneralSecurityException {
         byte[] iv = generate16RandomBytes();
         byte[] salt = generate16RandomBytes();
 
@@ -45,7 +42,7 @@ public class AesEncryptionStrategy {
         return cipherTextWithIvAndSalt;
     }
 
-    public static byte[] decrypt(byte[] cipherTextWithIvAndSalt, String password) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, InvalidKeySpecException, InvalidAlgorithmParameterException {
+    public byte[] decrypt(byte[] cipherTextWithIvAndSalt, String password) throws GeneralSecurityException {
         byte[] iv = Arrays.copyOfRange(cipherTextWithIvAndSalt, 0, 16);
         byte[] salt = Arrays.copyOfRange(cipherTextWithIvAndSalt, 16, 32);
         byte[] cipherText = Arrays.copyOfRange(cipherTextWithIvAndSalt, 32, cipherTextWithIvAndSalt.length);

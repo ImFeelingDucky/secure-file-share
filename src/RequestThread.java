@@ -9,6 +9,12 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Handles the entire lifecycle of a single request from a client.
+ *
+ * When the client sends a messages, it is accepted by the SockerServer, which then spawns a new RequestThread to
+ * handle interpreting the request, and constructing and returning a response to the client.
+ */
 public class RequestThread extends Thread {
     public static final String FILES_DIRECTORY = Paths.get(System.getProperty("user.dir"), "server-files").toString();
     private Socket socket;

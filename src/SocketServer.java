@@ -2,6 +2,10 @@ import java.io.*;
 import java.net.*;
 import java.lang.*;
 
+/**
+ * Receives requests from the client, delegating actual request interpretation and response generation
+ * to RequestThreads; one per request.
+ */
 public class SocketServer {
     private int port;
 

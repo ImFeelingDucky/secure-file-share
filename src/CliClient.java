@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
+/**
+ * Exposes application functionality implemented in SocketClient to the user through a command-line interface.
+ */
 public class CliClient {
     private SocketClient socketClient = new SocketClient();
     private static String usage = "Usage: java CliClient <action> <hostname> <port> <commandArguments>" +
