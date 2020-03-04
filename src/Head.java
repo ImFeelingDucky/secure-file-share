@@ -1,6 +1,7 @@
+import java.io.Serializable;
 import java.util.Map;
 
-public class Head {
+public class Head implements Serializable {
     private String hostname;
     private int port;
     private Action action;

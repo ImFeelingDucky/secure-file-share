@@ -3,12 +3,11 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 public class CliClient {
-    private SocketClient socket;
+    private SocketClient socketClient = new SocketClient();
     private static String usage = "Usage: java CliClient <action> <hostname> <port> <commandArguments>" +
             "\nwhere action is one of: upload, download, list.";
 
@@ -38,9 +37,9 @@ public class CliClient {
         String hostname = args[1];
         int port = Integer.parseInt(args[2]);
 
-        Map<String, String> arguments = new HashMap<>();
-
         String directory = args[3];
+
+        Map<String, String> arguments = new HashMap<>();
         arguments.put("directory", directory);
 
         byte[] body = null;
@@ -48,6 +47,8 @@ public class CliClient {
         // Check args validity
         switch (action) {
             case LIST:
+                // TODO Test this then remove it! :P
+                body = "asd".getBytes(StandardCharsets.UTF_8);
                 break;
             case UPLOAD:
             case DOWNLOAD:
@@ -61,7 +62,8 @@ public class CliClient {
         Message request = new Message(new Head(hostname, port, action, arguments), body);
 
         try {
-            Message response = socket.makeRequest(request);
+//            Then we send the request and wait, then the server sends its response back to us
+            Message response = socketClient.makeRequest(request);
 
 //          Choose what to do with response based on content type
             switch (response.getHead().get("Content-Type")) {
