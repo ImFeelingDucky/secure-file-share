@@ -1,60 +1,49 @@
-import javax.crypto.*;
-import javax.crypto.spec.PBEKeySpec;
-import java.security.*;
-import java.security.spec.InvalidKeySpecException;
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 public class AesEncryptionStrategy implements EncryptionStrategy {
-    private static final String CIPHER_TYPE = "AES";
-    private static final String CIPHER_SPECIFICATION = "AES/CBC/PKCS5Padding";
+    private static SecretKeySpec secretKeySpec;
+    private static byte[] key;
 
-    private static byte[] generate16RandomBytes() throws NoSuchAlgorithmException {
-        SecureRandom random = SecureRandom.getInstanceStrong();
-        byte[] bytes = new byte[16];
-        random.nextBytes(bytes);
-
-        return bytes;
+    public static void setKey(String password) {
+        try {
+            key = password.getBytes("UTF-8");
+            MessageDigest sha = MessageDigest.getInstance("SHA-1");
+            key = sha.digest(key);
+            key = Arrays.copyOf(key, 16);
+            secretKeySpec = new SecretKeySpec(key, "AES");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
     }
 
-    private static Key prepareKey(String password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException {
-        PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 3, 128 * 8);
-        return SecretKeyFactory.getInstance("AES").generateSecret(spec);
+    public byte[] encrypt(byte[] input, String secret) {
+        try {
+            setKey(secret);
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
+            return cipher.doFinal(input);
+        } catch (Exception e) {
+            System.out.println("Error while encrypting: " + e.toString());
+        }
+        return null;
     }
 
-    public byte[] encrypt(byte[] plainText, String password) throws GeneralSecurityException {
-        byte[] iv = generate16RandomBytes();
-        byte[] salt = generate16RandomBytes();
-
-        Key key = prepareKey(password, salt);
-        Cipher cipher = Cipher.getInstance("AES");
-
-//        cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
-        cipher.init(Cipher.ENCRYPT_MODE, key);
-
-        byte[] cipherText = cipher.doFinal(plainText);
-
-        byte[] cipherTextWithIvAndSalt = new byte[cipherText.length + 2 * 16];
-
-        System.arraycopy(iv, 0, cipherTextWithIvAndSalt, 0, 16);
-        System.arraycopy(salt, 0, cipherTextWithIvAndSalt, 16, 16);
-        System.arraycopy(cipherText, 0, cipherTextWithIvAndSalt, 32, cipherText.length);
-
-        return cipherTextWithIvAndSalt;
-    }
-
-    public byte[] decrypt(byte[] cipherTextWithIvAndSalt, String password) throws GeneralSecurityException {
-        byte[] iv = Arrays.copyOfRange(cipherTextWithIvAndSalt, 0, 16);
-        byte[] salt = Arrays.copyOfRange(cipherTextWithIvAndSalt, 16, 32);
-        byte[] cipherText = Arrays.copyOfRange(cipherTextWithIvAndSalt, 32, cipherTextWithIvAndSalt.length);
-
-        Key key = prepareKey(password, salt);
-        Cipher cipher = Cipher.getInstance("AES");
-
-//        cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
-        cipher.init(Cipher.DECRYPT_MODE, key);
-
-        byte[] plainText = cipher.doFinal(cipherText);
-
-        return plainText;
+    public byte[] decrypt(byte[] input, String secret) {
+        try {
+            setKey(secret);
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.DECRYPT_MODE, secretKeySpec);
+            return cipher.doFinal(input);
+        } catch (Exception e) {
+            System.out.println("Error while decrypting: " + e.toString());
+        }
+        return null;
     }
 }

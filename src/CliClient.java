@@ -3,6 +3,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -61,6 +62,22 @@ public class CliClient {
                 try {
                     System.out.println("PATH READING FROM: " + path.toString());
                     body = Files.readAllBytes(path);
+
+                    // Get password from user
+                    System.out.println("Please enter your file's password:");
+                    Scanner scanner = new Scanner(System.in);
+                    String password = scanner.nextLine();
+
+//              Apply password and decrypt downloaded file
+                    EncryptionStrategy encryption = new AesEncryptionStrategy();
+
+                    try {
+                        body = encryption.encrypt(body, password);
+                    } catch (GeneralSecurityException e) {
+                        e.printStackTrace();
+                    }
+
+
                 } catch (IOException e) {
                     System.out.println("Could not read file: " + uploadFilename);
                     System.exit(1);
@@ -102,7 +119,7 @@ public class CliClient {
                 System.out.println("Got file from server:");
                 System.out.println(new String(response.getBody(), StandardCharsets.UTF_8));
 
-                Path path = Paths.get(System.getProperty("user.dir"), "client-files", request.getHead().get("directory"), request.getHead().get("filename"));
+                Path path = Paths.get(request.getHead().get("directory"), request.getHead().get("filename"));
                 System.out.println("Writing to file: " + path.toString());
 
                 Files.createDirectories(path.getParent());
@@ -112,11 +129,16 @@ public class CliClient {
                 Scanner scanner = new Scanner(System.in);
                 String password = scanner.nextLine();
 
-//                TODO: Apply password and decrypt downloaded file
-//                byte[] decryptedBytes = AesEncryptionStrategy.decrypt(encryptedBytes, password);
+//              Apply password and decrypt downloaded file
+                EncryptionStrategy encryption = new AesEncryptionStrategy();
+                byte[] decryptedBytes = new byte[0];
+                try {
+                    decryptedBytes = encryption.decrypt(encryptedBytes, password);
+                } catch (GeneralSecurityException e) {
+                    e.printStackTrace();
+                }
 
-//                Files.write(path, decryptedBytes);
-                Files.write(path, encryptedBytes);
+                Files.write(path, decryptedBytes);
                 break;
             case "none":
                 break;
