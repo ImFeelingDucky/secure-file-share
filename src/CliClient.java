@@ -54,7 +54,9 @@ public class CliClient {
                 arguments.put("filename", uploadFilename);
 
                 try {
-                    body = Files.readAllBytes(Paths.get(RequestThread.FILES_DIRECTORY, directory, uploadFilename));
+                    Path path = Paths.get(System.getProperty("user.dir"), uploadFilename);
+                    System.out.println("PATH READING FroM: " + path.toString());
+                    body = Files.readAllBytes(path);
                 } catch (IOException e) {
                     System.out.println("Could not read file: " + uploadFilename);
                     System.exit(1);
@@ -82,6 +84,11 @@ public class CliClient {
     }
 
     public void handleResponse(Message request, Message response) throws IOException {
+        if (!response.getHead().isSuccessful()) {
+            System.out.println("The server encountered an error processing your request.");
+            System.exit(1);
+        }
+
         switch (response.getHead().get("Content-Type")) {
             case "text":
                 System.out.println("Got text from server:");
@@ -106,6 +113,8 @@ public class CliClient {
 
 //                Files.write(path, decryptedBytes);
                 Files.write(path, encryptedBytes);
+                break;
+            case "none":
                 break;
         }
     }

@@ -1,8 +1,5 @@
 import java.io.*;
 import java.net.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.*;
 import java.lang.*;
 
 public class SocketServer {
@@ -20,7 +17,7 @@ public class SocketServer {
                 Socket socket = serverSocket.accept();
                 System.out.println("New client connected");
 
-                RequestThread2 newRequest = new RequestThread2(socket);
+                RequestThread newRequest = new RequestThread(socket);
                 newRequest.start();
             }
 

@@ -1,4 +1,6 @@
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -10,95 +12,114 @@ import java.util.Map;
 public class RequestThread extends Thread {
     public static final String FILES_DIRECTORY = Paths.get(System.getProperty("user.dir"), "server-files").toString();
     private Socket socket;
-//    private SocketServer server;
-
-//    public RequestThread(Socket socket, SocketServer server) {
-//        this.socket = socket;
-//        this.server = server;
-//    }
 
     public RequestThread(Socket socket) {
         this.socket = socket;
     }
 
     public void run() {
+        // Receive request from client
+        Message request = readRequest();
+
+
+        // Build response Message object
+        Message response = buildResponse(request);
+
+
+        // Send completed response Message object to client
+        sendResponse(response);
+    }
+
+    public Message buildResponse(Message request) {
+        byte[] body = new byte[0];
+        Map<String, String> arguments = new HashMap<>();
+
+        switch (request.getHead().getAction()) {
+            case LIST:
+                String files = String.join("\n", Paths.get(FILES_DIRECTORY, request.getHead().get("directory")).toFile().list());
+                body = files.getBytes(StandardCharsets.UTF_8);
+                System.out.println("Got list query. Responding with: \n" + files);
+
+                arguments.put("Content-Type", "text");
+                break;
+            case DOWNLOAD:
+                System.out.println("TRYING TO SERVE DOWNLOAD REQUEST.");
+
+                try {
+                    Path path = Paths.get(RequestThread.FILES_DIRECTORY, request.getHead().get("directory"), request.getHead().get("filename"));
+                    System.out.println("Reading from file: " + path.toString());
+
+                    body = Files.readAllBytes(path);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                arguments.put("Content-Type", "file");
+                break;
+            case UPLOAD:
+                System.out.println("TRYING TO SERVE UPLOAD REQUEST.");
+
+                Path path = Paths.get(System.getProperty("user.dir"), "server-files", request.getHead().get("directory"), request.getHead().get("filename"));
+                System.out.println("Writing to file: " + path.toString());
+
+                try {
+                    Files.createDirectories(path.getParent());
+                    Files.write(path, request.getBody());
+                } catch (IOException e) {
+                    System.out.println("Could not write to file: " + path.toString());
+                    e.printStackTrace();
+                }
+
+                arguments.put("Content-Type", "none");
+                break;
+        }
+
+        return new Message(new Head(request.getHead().getHostname(), request.getHead().getPort(), request.getHead().getAction(), arguments), body);
+    }
+
+    /**
+     * Reads a request Message object from the ObjectInputStream associated with this RequestThread's socket.
+     *
+     * @return the request
+     */
+    public Message readRequest() {
         Message request = null;
-        try (ObjectInputStream ois = new ObjectInputStream(socket.getInputStream())) {
-            request = (Message) ois.readObject();
+        ObjectInputStream inputStream = null;
+
+        try {
+            inputStream = new ObjectInputStream(socket.getInputStream());
+        } catch (IOException e) {
+            System.out.println("nonononononono can't get inputstream :'(");
+            e.printStackTrace();
+        }
+
+        try {
+            request = (Message) inputStream.readObject();
         } catch (IOException | ClassNotFoundException e) {
-            System.out.println("Server: Oops :( could not read Request Message" + e.getMessage());
+            System.out.println("Server: Can't read request Message object from client.");
             System.exit(1);
         }
 
-        Action action = request.getAction();
-        String directory = request.getFromHead("directory");
+        return request;
+    }
 
-        Map<String, String> arguments = new HashMap<>();
-
-//        TODO: Set this inside the switch (action)
-        arguments.put("Content-Type", "text");
-        arguments.put("directory", directory);
-
-//    undelete this
-//        byte[] body = null;
-
-//        Delet this -_-
-        byte[] body = new byte[0];
+    /**
+     * Sends a response Message object to the client through the ObjectOutputStream associated with
+     * this RequestThread's socket.
+     *
+     * @param response
+     */
+    public void sendResponse(Message response) {
+        ObjectOutputStream outputStream = null;
         try {
-            body = Files.readAllBytes(Paths.get(FILES_DIRECTORY, "max", "a.txt"));
+            outputStream = new ObjectOutputStream(socket.getOutputStream());
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        boolean debugging = true;
-//        Delette above this -_-
-
-
-        if (!debugging) {
-            switch (action) {
-                case LIST:
-                    String files = String.join("\n", new File(FILES_DIRECTORY).list());
-                    body = files.getBytes(StandardCharsets.UTF_8);
-                    System.out.println("Got list query. Responded with: \n" + files);
-                    break;
-                case UPLOAD:
-                    byte[] fileToUpload = request.getBody();
-                case DOWNLOAD:
-                    try {
-                        String filename = request.getHead().get("filename");
-
-                        Path path = Paths.get(FILES_DIRECTORY, directory, filename);
-
-                        System.out.println("Sending file at path: " + path.toString() + " to client.");
-
-                        body = Files.readAllBytes(new File(request.getHead().get("filename")).toPath());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected value: " + action);
-            }
-        }
-
-        Message response = new Message(new Head(request.getHead().getHostname(), request.getHead().getPort(), action, arguments), body);
-
         try {
-            ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
             outputStream.writeObject(response);
         } catch (IOException e) {
-            System.out.println("Couldn't return response to client, because IOException :( ");
-            e.printStackTrace();
-        }
-
-        // Change this so that it gets the argument for the command
-
-//        server.closeRequest(this);
-
-        try {
-            socket.close();
-        } catch (IOException e) {
+            System.out.println("Server: Can't write response Message object to client socket.");
             e.printStackTrace();
         }
     }
