@@ -1,10 +1,11 @@
-import java.io.File;
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 
 public class CliClient {
     private SocketClient socketClient = new SocketClient();
@@ -47,13 +48,23 @@ public class CliClient {
         // Check args validity
         switch (action) {
             case LIST:
-                // TODO Test this then remove it! :P
-                body = "asd".getBytes(StandardCharsets.UTF_8);
                 break;
             case UPLOAD:
+                String uploadFilename = args[4];
+                arguments.put("filename", uploadFilename);
+
+                try {
+                    body = Files.readAllBytes(Paths.get(RequestThread.FILES_DIRECTORY, directory, uploadFilename));
+                } catch (IOException e) {
+                    System.out.println("Could not read file: " + uploadFilename);
+                    System.exit(1);
+                }
+
+                break;
             case DOWNLOAD:
-                String filename = args[3];
-                arguments.put("filename", filename);
+                String downloadFilename = args[4];
+                arguments.put("filename", downloadFilename);
+
                 break;
             default:
                 System.out.println(usage);
@@ -61,23 +72,41 @@ public class CliClient {
 
         Message request = new Message(new Head(hostname, port, action, arguments), body);
 
+        // Then we send the request and wait, then the server sends its response back to us
         try {
-//            Then we send the request and wait, then the server sends its response back to us
             Message response = socketClient.makeRequest(request);
+            handleResponse(request, response);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-//          Choose what to do with response based on content type
-            switch (response.getHead().get("Content-Type")) {
-                case "text":
-                    System.out.println(new String(response.getBody(), StandardCharsets.UTF_8));
-                    break;
-                case "file":
-                    File f = new File(response.getHead().get("filename"));
-                    Files.write(f.toPath(), response.getBody());
-            }
-        } catch (UnknownHostException ex) {
-            System.out.println("Server not found: " + ex.getMessage());
-        } catch (IOException ex) {
-            System.out.println("I/O Error: " + ex.getMessage());
+    public void handleResponse(Message request, Message response) throws IOException {
+        switch (response.getHead().get("Content-Type")) {
+            case "text":
+                System.out.println("Got text from server:");
+                System.out.println(new String(response.getBody(), StandardCharsets.UTF_8));
+                break;
+            case "file":
+                System.out.println("Got file from server:");
+                System.out.println(new String(response.getBody(), StandardCharsets.UTF_8));
+
+                Path path = Paths.get(System.getProperty("user.dir"), "client-files", request.getHead().get("directory"), request.getHead().get("filename"));
+                System.out.println("Writing to file: " + path.toString());
+
+                Files.createDirectories(path.getParent());
+                byte[] encryptedBytes = response.getBody();
+
+                System.out.println("Please enter your file's password:");
+                Scanner scanner = new Scanner(System.in);
+                String password = scanner.nextLine();
+
+//                TODO: Apply password and decrypt downloaded file
+//                byte[] decryptedBytes = AesEncryptionStrategy.decrypt(encryptedBytes, password);
+
+//                Files.write(path, decryptedBytes);
+                Files.write(path, encryptedBytes);
+                break;
         }
     }
 }

@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RequestThread extends Thread {
-    public static final String FILES_DIRECTORY = Paths.get(System.getProperty("user.dir"), "files").toString();
+    public static final String FILES_DIRECTORY = Paths.get(System.getProperty("user.dir"), "server-files").toString();
     private Socket socket;
 //    private SocketServer server;
 
