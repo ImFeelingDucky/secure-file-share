@@ -51,11 +51,12 @@ public class CliClient {
                 break;
             case UPLOAD:
                 String uploadFilename = args[4];
-                arguments.put("filename", uploadFilename);
+                Path path = Paths.get(uploadFilename);
+
+                arguments.put("filename", path.getFileName().toString());
 
                 try {
-                    Path path = Paths.get(System.getProperty("user.dir"), uploadFilename);
-                    System.out.println("PATH READING FroM: " + path.toString());
+                    System.out.println("PATH READING FROM: " + path.toString());
                     body = Files.readAllBytes(path);
                 } catch (IOException e) {
                     System.out.println("Could not read file: " + uploadFilename);
