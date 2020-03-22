@@ -1,4 +1,9 @@
 # secure-file-share
+The bulk of this repository is the work of one night of coding, with a party in between, in a collaboration between [ImFeelingDucky](https://github.com/ImFeelingDucky) and [14cobra](https://github.com/14cobra) for a university assignment. It does not exemplify coding best-practices and has been made public for public entertainment rather than usage. However, the ideas behind secure-file-share indeed held merit, and further work in underway on a spiritual successor: https://github.com/ImFeelingDucky/quickshare.
+
+More formally: This repository is deprecated and further work on secure filesharing happens at https://github.com/ImFeelingDucky/quickshare.
+
+Previous:
 This application allows easy and secure password-based sharing of files through a centralised server model.
 
 Files are encrypted locally, transferred to a server through a TCP socket connection, and stored in their encrypted form on the server. Then, when downloaded, files are transferred to the client, still encrypted, until they arrive on the client computer when they are decrypted locally.
